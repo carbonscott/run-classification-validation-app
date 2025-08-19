@@ -5,6 +5,7 @@ This creates a sample validation file for testing.
 """
 
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 import utils
@@ -106,7 +107,8 @@ def create_demo_validation():
     ]
     
     # Save demo validation file
-    output_path = Path("validations/demo_validation.json")
+    validation_dir = os.getenv('VALIDATION_DATA_DIR', 'validations')
+    output_path = Path(validation_dir) / "demo_validation.json"
     output_path.parent.mkdir(exist_ok=True)
     
     with open(output_path, 'w') as f:

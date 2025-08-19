@@ -25,6 +25,35 @@ A Streamlit-based application for validating automated run classifications from 
 
 ## Installation
 
+### Option 1: Install as Python Package (Recommended)
+
+**For end users who want a simple command-line tool:**
+
+1. **Install the package**
+   ```bash
+   cd /path/to/run-classification-validation-app
+   pip install .
+   ```
+
+2. **Run the application**
+   ```bash
+   # Simple usage
+   run-classification-validator
+   
+   # Or use short alias
+   rcv
+   
+   # With custom settings
+   run-classification-validator --data-path /path/to/experiments --port 8502
+   ```
+
+3. **Access the app**
+   Open your browser to `http://localhost:8501` (or your custom port)
+
+### Option 2: Development Setup
+
+**For developers or users who want to modify the code:**
+
 1. **Clone or download this directory**
    ```bash
    cd /path/to/run-classification-validation-app
@@ -38,10 +67,90 @@ A Streamlit-based application for validating automated run classifications from 
 3. **Run the application**
    ```bash
    streamlit run app.py
+   # OR use the included script
+   ./run_app.sh
    ```
 
 4. **Access the app**
    Open your browser to `http://localhost:8501`
+
+### CLI Tool Usage
+
+Once installed as a package, you can use the command-line interface:
+
+```bash
+# Show help
+run-classification-validator --help
+
+# Basic usage with default settings
+run-classification-validator
+
+# Specify custom data directory and validation directory
+run-classification-validator --data-path /path/to/experiments --validation-dir /custom/validations
+
+# Use custom port and reviewer name
+run-classification-validator --port 8502 --reviewer "Jane Doe"
+
+# Run without auto-opening browser
+run-classification-validator --no-browser
+
+# Run in debug mode
+run-classification-validator --debug
+```
+
+#### CLI Options
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--data-path` | `-d` | Path to experiment markdown files | (configurable in UI) |
+| `--validation-dir` | `-v` | Validation data directory | `validations` or `$VALIDATION_DATA_DIR` |
+| `--reviewer` | `-r` | Reviewer name for validations | `Reviewer` |
+| `--port` | `-p` | Streamlit server port | `8501` |
+| `--host` | | Streamlit server host | `localhost` |
+| `--no-browser` | | Don't auto-open browser | `false` |
+| `--debug` | | Enable debug logging | `false` |
+| `--version` | | Show version information | |
+| `--help` | `-h` | Show help message | |
+
+## Configuration
+
+### Environment Variables
+
+You can customize the application behavior using environment variables:
+
+- **`VALIDATION_DATA_DIR`**: Directory where validation progress files are stored
+  - Default: `validations`
+  - Example: `export VALIDATION_DATA_DIR=/path/to/custom/validations`
+
+### Setting Custom Validation Directory
+
+1. **Via Environment Variable** (recommended for permanent setup):
+   ```bash
+   # Option 1: Set directly
+   export VALIDATION_DATA_DIR=/path/to/my/validation/data
+   streamlit run app.py
+   
+   # Option 2: Use .env file
+   cp .env.example .env
+   # Edit .env file with your custom settings
+   streamlit run app.py
+   ```
+
+2. **Via Application Interface**: 
+   - Use the "Validation data directory" field in the sidebar
+   - Overrides the environment variable for the current session
+
+3. **Examples**:
+   ```bash
+   # Store validations in home directory
+   export VALIDATION_DATA_DIR=~/experiment_validations
+   
+   # Store validations in shared project directory
+   export VALIDATION_DATA_DIR=/shared/project/validations
+   
+   # Store validations in current working directory
+   export VALIDATION_DATA_DIR=./validation_progress
+   ```
 
 ## Usage
 
@@ -49,8 +158,9 @@ A Streamlit-based application for validating automated run classifications from 
 
 1. **Configure data path**: Enter the path to your experiment markdown files
 2. **Set reviewer name**: Your name will be recorded with validations
-3. **Select experiment**: Choose an experiment file to validate
-4. **Start validating**: Review activities and confirm/correct classifications
+3. **Set validation directory**: Choose where to store progress files (optional)
+4. **Select experiment**: Choose an experiment file to validate
+5. **Start validating**: Review activities and confirm/correct classifications
 
 ### Interface Overview
 

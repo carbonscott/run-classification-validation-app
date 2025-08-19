@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import re
+import os
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any
@@ -20,6 +21,10 @@ if 'bulk_mode' not in st.session_state:
     st.session_state.bulk_mode = False
 if 'show_stats' not in st.session_state:
     st.session_state.show_stats = False
+
+def get_validation_directory() -> str:
+    """Get validation directory from environment variable or default"""
+    return os.getenv('VALIDATION_DATA_DIR', 'validations')
 
 def load_validation_file(validation_path: Path) -> Dict:
     """Load existing validation JSON or create new one"""
@@ -79,6 +84,14 @@ with st.sidebar:
     
     reviewer_name = st.text_input("Your name:", value="Reviewer")
     
+    # Validation data directory configuration
+    default_validation_dir = get_validation_directory()
+    validation_data_dir = st.text_input(
+        "Validation data directory:",
+        value=default_validation_dir,
+        help=f"Directory to store validation progress files. Default from VALIDATION_DATA_DIR env var or 'validations'"
+    )
+    
     # File selection
     if Path(data_path).exists():
         md_files = sorted(list(Path(data_path).glob("*_full_enrichment.md")))
@@ -91,7 +104,7 @@ with st.sidebar:
             selected_file = Path(data_path) / selected_file_name
             
             # Load validation file
-            validation_file = Path("validations") / f"{selected_file.stem}_validation.json"
+            validation_file = Path(validation_data_dir) / f"{selected_file.stem}_validation.json"
             validation_data = load_validation_file(validation_file)
             
             if validation_data["experiment_id"] == "":
@@ -241,7 +254,7 @@ elif st.session_state.bulk_mode:
     
     with col2:
         target_class = st.selectbox("Classification:", 
-                                   ["sample_run", "calibration_run", "alignment_run", "background_run"])
+                                   ["sample_run", "calibration_run", "alignment_run", "test_run", "commissioning_run", "unknown_run"])
     
     with col3:
         if search_term and st.button("Apply Custom"):
@@ -417,26 +430,27 @@ else:
                         st.session_state.current_run += 1
                         st.rerun()
 
-# Keyboard shortcuts info
+
+# Navigation help
 st.divider()
-with st.expander("⌨️ Keyboard Shortcuts", expanded=False):
+with st.expander("🖱️ Navigation Guide", expanded=False):
     st.markdown("""
-    **Navigation:**
-    - `←/→` Arrow keys: Previous/Next run
-    - `Space`: Skip run
-    - `Enter`: Save & Next (when validation is selected)
+    **Mouse/Click Navigation:**
+    - Use the Previous/Next buttons to navigate runs
+    - Use the numbered radio buttons [1-6] for quick classification selection
+    - Use Skip button to move without saving
+    - Use Save & Next button to save and proceed
     
-    **Classification:**
-    - `1`: Select Sample Run
-    - `2`: Select Calibration Run  
-    - `3`: Select Alignment Run
-    - `4`: Select Test Run
-    - `5`: Select Commissioning Run
-    - `6`: Select Unknown Run
+    **Quick Selection:**
+    - Click the [1-6] numbered options for fast classification
+    - Use Jump to field to go directly to a specific run
+    - Use bulk mode (⚡ Toggle Bulk Mode) for pattern-based validation
     
     **Modes:**
-    - `B`: Toggle Bulk Mode
-    - `S`: Show Statistics
+    - ⚡ Bulk Mode: Apply patterns to multiple runs at once
+    - 📈 Statistics: View validation progress and accuracy
+    
+    *Note: Keyboard shortcuts are not supported due to browser limitations in Streamlit.*
     """)
 
 # Auto-save current state

@@ -131,9 +131,13 @@ dmypy.json
 # Streamlit
 .streamlit/
 
-# Validation data - comment out if you want to track validation files
-# validations/
-# *.json
+# Validation data - user progress files should not be in git
+validations/
+# But keep demo and test JSON files in test_data/
+!test_data/*.json
+
+# Package build artifacts (from pip install -e .)
+*.egg-info/
 
 # OS files
 .DS_Store
