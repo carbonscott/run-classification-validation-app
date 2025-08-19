@@ -294,6 +294,12 @@ def suggest_classification(run: Dict) -> Tuple[str, str]:
     if ('energy' in combined_text and 'scan' in combined_text) or 'spectrometer' in combined_text:
         return 'calibration_run', 'Energy scans and spectrometer settings are calibration activities'
     
+    # Check for unclear/minimal activities that suggest unknown classification
+    if (not activities_str.strip() or 
+        len(run.get('activities', [])) == 0 or
+        (len(run.get('activities', [])) == 1 and len(activities_str.strip()) < 20)):
+        return 'unknown_run', 'Insufficient or unclear activity information'
+    
     # If nothing specific found, keep original
     original_classification = run.get('classification', 'sample_run')
     return original_classification, 'No clear pattern detected, keeping original classification'
@@ -304,5 +310,6 @@ def get_classification_hints() -> Dict[str, str]:
         'sample_run': 'Chemical samples, materials under investigation, Fe(III), organic compounds',
         'calibration_run': 'DARK measurements, pedestal runs, energy scans, detector calibration',
         'alignment_run': 'Beam alignment, focus adjustments, positioning, optical setup',
-        'background_run': 'Water, empty cell, reference measurements, baseline data'
+        'background_run': 'Water, empty cell, reference measurements, baseline data',
+        'unknown_run': 'Ambiguous activities, insufficient information, unclear purpose, mixed activities'
     }

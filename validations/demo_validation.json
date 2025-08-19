@@ -2,13 +2,13 @@
   "experiment_id": "mfx10089532",
   "source_file": "mfx10089532_full_enrichment.md",
   "reviewer": "Demo User",
-  "started_at": "2025-08-18T23:22:10.591851",
-  "last_updated": "2025-08-18T23:22:10.591857",
+  "started_at": "2025-08-18T23:45:23.706629",
+  "last_updated": "2025-08-18T23:45:23.706635",
   "stats": {
     "total_runs": 99,
-    "validated_runs": 5,
-    "corrections_made": 2,
-    "accuracy_rate": 60.0
+    "validated_runs": 6,
+    "corrections_made": 3,
+    "accuracy_rate": 50.0
   },
   "validations": {
     "7": {
@@ -40,6 +40,12 @@
       "validated": "sample_run",
       "method": "manual",
       "notes": "Corrected - despite realignment activities, primary purpose was Fe foil measurement"
+    },
+    "105": {
+      "original": "sample_run",
+      "validated": "unknown_run",
+      "method": "manual",
+      "notes": "Ambiguous - note says 'ignore this one, only half the data in it' - unclear purpose"
     }
   },
   "bulk_operations": [
@@ -60,7 +66,7 @@
         103,
         115
       ],
-      "timestamp": "2025-08-18T23:22:10.591863"
+      "timestamp": "2025-08-18T23:45:23.706642"
     }
   ]
 }

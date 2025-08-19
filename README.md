@@ -68,6 +68,7 @@ A Streamlit-based application for validating automated run classifications from 
 │ ✅ YOUR VALIDATION:                                     │
 │ 🧪 [1] ◉ Sample Run     ⚙️ [2] ○ Calibration Run     │
 │ 🎯 [3] ○ Alignment Run  🔍 [4] ○ Background Run       │
+│ ❓ [5] ○ Unknown Run                                   │
 │                                                         │
 │ [✓ Save & Next] [→ Skip] [⚡ Bulk Mode] [📈 Stats]     │
 └─────────────────────────────────────────────────────────┘
@@ -98,6 +99,7 @@ A Streamlit-based application for validating automated run classifications from 
 | ⚙️ **Calibration Run** | Detector/instrument calibration | DARK measurements, pedestal runs, energy scans |
 | 🎯 **Alignment Run** | Beam alignment and positioning | Focus adjustments, beam positioning, optical setup |
 | 🔍 **Background Run** | Reference measurements | Water, empty cell, baseline measurements |
+| ❓ **Unknown Run** | Ambiguous or unclear activities | Insufficient information, mixed activities, vague descriptions |
 
 ### Bulk Operations
 
@@ -126,6 +128,7 @@ Access bulk mode for efficient validation of similar runs:
 - `2`: Select Calibration Run
 - `3`: Select Alignment Run
 - `4`: Select Background Run
+- `5`: Select Unknown Run
 
 #### Modes
 - `B`: Toggle Bulk Mode

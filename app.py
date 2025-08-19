@@ -358,12 +358,13 @@ else:
         
         with col1:
             # Classification options with keyboard hints
-            classification_options = ["sample_run", "calibration_run", "alignment_run", "background_run"]
+            classification_options = ["sample_run", "calibration_run", "alignment_run", "background_run", "unknown_run"]
             classification_labels = [
                 "🧪 [1] Sample Run (chemical samples, materials)",
                 "⚙️ [2] Calibration Run (DARK, pedestal, energy)",  
                 "🎯 [3] Alignment Run (beam alignment, focus)",
-                "🔍 [4] Background Run (water, empty, reference)"
+                "🔍 [4] Background Run (water, empty, reference)",
+                "❓ [5] Unknown Run (ambiguous, unclear purpose)"
             ]
             
             selected_classification = st.radio(
@@ -429,6 +430,7 @@ with st.expander("⌨️ Keyboard Shortcuts", expanded=False):
     - `2`: Select Calibration Run  
     - `3`: Select Alignment Run
     - `4`: Select Background Run
+    - `5`: Select Unknown Run
     
     **Modes:**
     - `B`: Toggle Bulk Mode

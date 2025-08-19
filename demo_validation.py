@@ -27,9 +27,9 @@ def create_demo_validation():
         "last_updated": datetime.now().isoformat(),
         "stats": {
             "total_runs": len(runs),
-            "validated_runs": 5,
-            "corrections_made": 2,
-            "accuracy_rate": 60.0
+            "validated_runs": 6,
+            "corrections_made": 3,
+            "accuracy_rate": 50.0
         },
         "validations": {},
         "bulk_operations": []
@@ -66,6 +66,12 @@ def create_demo_validation():
             "original": "calibration_run",
             "validated": "sample_run",
             "notes": "Corrected - despite realignment activities, primary purpose was Fe foil measurement"
+        },
+        {
+            "run": 105,
+            "original": "sample_run",
+            "validated": "unknown_run",
+            "notes": "Ambiguous - note says 'ignore this one, only half the data in it' - unclear purpose"
         }
     ]
     
@@ -95,7 +101,7 @@ def create_demo_validation():
         json.dump(validation_data, f, indent=2)
     
     print(f"💾 Created demo validation file: {output_path}")
-    print(f"📊 Contains {len(validation_data['validations'])} individual validations")
+    print(f"📊 Contains {len(validation_data['validations'])} individual validations (including unknown_run example)")
     print(f"⚡ Contains {len(validation_data['bulk_operations'])} bulk operations")
     
     # Show some sample runs for context
