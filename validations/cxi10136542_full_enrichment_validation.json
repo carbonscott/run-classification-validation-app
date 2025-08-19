@@ -1,0 +1,15 @@
+{
+  "experiment_id": "cxi10136542_full_enrichment",
+  "source_file": "cxi10136542_full_enrichment.md",
+  "reviewer": "Reviewer",
+  "started_at": "2025-08-18T23:26:15.868154",
+  "last_updated": "2025-08-18T23:30:46.136525",
+  "stats": {
+    "total_runs": 39,
+    "validated_runs": 0,
+    "corrections_made": 0,
+    "accuracy_rate": 0
+  },
+  "validations": {},
+  "bulk_operations": []
+}

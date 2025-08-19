@@ -1,0 +1,40 @@
+{
+  "experiment_id": "mfxp100442_full_enrichment",
+  "source_file": "mfxp100442_full_enrichment.md",
+  "reviewer": "Cong Wang",
+  "started_at": "2025-08-18T23:27:12.615083",
+  "last_updated": "2025-08-18T23:29:17.626113",
+  "stats": {
+    "total_runs": 155,
+    "validated_runs": 4,
+    "corrections_made": 0,
+    "accuracy_rate": 100.0
+  },
+  "validations": {
+    "1": {
+      "original": "alignment_run",
+      "validated": "alignment_run",
+      "method": "manual",
+      "notes": ""
+    },
+    "3": {
+      "original": "calibration_run",
+      "validated": "calibration_run",
+      "method": "manual",
+      "notes": ""
+    },
+    "4": {
+      "original": "calibration_run",
+      "validated": "calibration_run",
+      "method": "manual",
+      "notes": ""
+    },
+    "5": {
+      "original": "calibration_run",
+      "validated": "calibration_run",
+      "method": "manual",
+      "notes": ""
+    }
+  },
+  "bulk_operations": []
+}

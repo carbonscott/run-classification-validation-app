@@ -1,0 +1,66 @@
+{
+  "experiment_id": "mfx10089532",
+  "source_file": "mfx10089532_full_enrichment.md",
+  "reviewer": "Demo User",
+  "started_at": "2025-08-18T23:22:10.591851",
+  "last_updated": "2025-08-18T23:22:10.591857",
+  "stats": {
+    "total_runs": 99,
+    "validated_runs": 5,
+    "corrections_made": 2,
+    "accuracy_rate": 60.0
+  },
+  "validations": {
+    "7": {
+      "original": "alignment_run",
+      "validated": "alignment_run",
+      "method": "manual",
+      "notes": "Correct - beam alignment activities confirmed"
+    },
+    "8": {
+      "original": "calibration_run",
+      "validated": "calibration_run",
+      "method": "manual",
+      "notes": "Correct - energy scan for calibration"
+    },
+    "19": {
+      "original": "calibration_run",
+      "validated": "sample_run",
+      "method": "manual",
+      "notes": "Corrected - Fe_foil_1e-3_ka_only is clearly a sample measurement"
+    },
+    "28": {
+      "original": "calibration_run",
+      "validated": "background_run",
+      "method": "manual",
+      "notes": "Corrected - water runs are background measurements"
+    },
+    "34": {
+      "original": "calibration_run",
+      "validated": "sample_run",
+      "method": "manual",
+      "notes": "Corrected - despite realignment activities, primary purpose was Fe foil measurement"
+    }
+  },
+  "bulk_operations": [
+    {
+      "pattern": "All DARK runs \u2192 calibration_run",
+      "applied_to": [
+        14,
+        15,
+        17,
+        18,
+        20,
+        30,
+        55,
+        56,
+        59,
+        60,
+        102,
+        103,
+        115
+      ],
+      "timestamp": "2025-08-18T23:22:10.591863"
+    }
+  ]
+}
