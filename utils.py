@@ -215,7 +215,41 @@ def get_bulk_patterns(runs: List[Dict]) -> List[Dict]:
             'description': 'Accept all high confidence automated classifications'
         })
     
-    # Pattern 7: Alignment runs
+    # Pattern 7: Test runs
+    test_runs = []
+    for run in runs:
+        activities_str = ' '.join(run['activities']).lower()
+        if ('test' in activities_str or 'testing' in activities_str or 
+            'check' in activities_str or 'verify' in activities_str or 
+            'performance' in activities_str):
+            test_runs.append(run['number'])
+    
+    if test_runs:
+        patterns.append({
+            'name': 'All test/verification runs → test_run',
+            'runs': test_runs,
+            'classification': 'test_run',
+            'description': 'Runs with testing and verification activities'
+        })
+    
+    # Pattern 8: Commissioning runs
+    commissioning_runs = []
+    for run in runs:
+        activities_str = ' '.join(run['activities']).lower()
+        if ('commissioning' in activities_str or 'commission' in activities_str or 
+            'setup' in activities_str or 'initial' in activities_str or 
+            'installation' in activities_str):
+            commissioning_runs.append(run['number'])
+    
+    if commissioning_runs:
+        patterns.append({
+            'name': 'All commissioning/setup runs → commissioning_run',
+            'runs': commissioning_runs,
+            'classification': 'commissioning_run',
+            'description': 'Runs with commissioning and setup activities'
+        })
+    
+    # Pattern 9: Alignment runs
     alignment_runs = []
     for run in runs:
         activities_str = ' '.join(run['activities']).lower()
@@ -281,8 +315,18 @@ def suggest_classification(run: Dict) -> Tuple[str, str]:
     if 'foil' in combined_text:
         return 'sample_run', 'Foil measurements are typically sample runs'
     
+    # Check for test activities
+    test_keywords = ['test', 'testing', 'check', 'verify', 'performance', 'detector test', 'system test']
+    if any(keyword in combined_text for keyword in test_keywords):
+        return 'test_run', 'Testing and verification activities detected'
+    
+    # Check for commissioning activities
+    commissioning_keywords = ['commissioning', 'commission', 'setup', 'initial', 'first time', 'installation', 'new equipment']
+    if any(keyword in combined_text for keyword in commissioning_keywords):
+        return 'commissioning_run', 'Commissioning and setup activities detected'
+    
     # Check for alignment activities
-    alignment_keywords = ['alignment', 'align', 'focus', 'beam positioning', 'calibration']
+    alignment_keywords = ['alignment', 'align', 'focus', 'beam positioning']
     if any(keyword in combined_text for keyword in alignment_keywords):
         # Distinguish between alignment and calibration
         if 'beam' in combined_text and ('focus' in combined_text or 'alignment' in combined_text):
@@ -310,6 +354,7 @@ def get_classification_hints() -> Dict[str, str]:
         'sample_run': 'Chemical samples, materials under investigation, Fe(III), organic compounds',
         'calibration_run': 'DARK measurements, pedestal runs, energy scans, detector calibration',
         'alignment_run': 'Beam alignment, focus adjustments, positioning, optical setup',
-        'background_run': 'Water, empty cell, reference measurements, baseline data',
+        'test_run': 'Equipment testing, detector verification, performance checks, system tests',
+        'commissioning_run': 'Initial setup, first-time configurations, new equipment commissioning',
         'unknown_run': 'Ambiguous activities, insufficient information, unclear purpose, mixed activities'
     }

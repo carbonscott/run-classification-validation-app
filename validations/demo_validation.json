@@ -2,13 +2,13 @@
   "experiment_id": "mfx10089532",
   "source_file": "mfx10089532_full_enrichment.md",
   "reviewer": "Demo User",
-  "started_at": "2025-08-18T23:45:23.706629",
-  "last_updated": "2025-08-18T23:45:23.706635",
+  "started_at": "2025-08-19T11:14:35.328386",
+  "last_updated": "2025-08-19T11:14:35.328395",
   "stats": {
     "total_runs": 99,
-    "validated_runs": 6,
-    "corrections_made": 3,
-    "accuracy_rate": 50.0
+    "validated_runs": 8,
+    "corrections_made": 5,
+    "accuracy_rate": 37.5
   },
   "validations": {
     "7": {
@@ -46,6 +46,18 @@
       "validated": "unknown_run",
       "method": "manual",
       "notes": "Ambiguous - note says 'ignore this one, only half the data in it' - unclear purpose"
+    },
+    "56": {
+      "original": "calibration_run",
+      "validated": "test_run",
+      "method": "manual",
+      "notes": "Detector testing - checking jungfrau performance and settings"
+    },
+    "106": {
+      "original": "sample_run",
+      "validated": "commissioning_run",
+      "method": "manual",
+      "notes": "Equipment setup - mentions 'major operation' and exchanging wells for first time"
     }
   },
   "bulk_operations": [
@@ -66,7 +78,7 @@
         103,
         115
       ],
-      "timestamp": "2025-08-18T23:45:23.706642"
+      "timestamp": "2025-08-19T11:14:35.328407"
     }
   ]
 }

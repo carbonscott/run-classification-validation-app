@@ -67,8 +67,8 @@ A Streamlit-based application for validating automated run classifications from 
 │                                                         │
 │ ✅ YOUR VALIDATION:                                     │
 │ 🧪 [1] ◉ Sample Run     ⚙️ [2] ○ Calibration Run     │
-│ 🎯 [3] ○ Alignment Run  🔍 [4] ○ Background Run       │
-│ ❓ [5] ○ Unknown Run                                   │
+│ 🎯 [3] ○ Alignment Run  🧪 [4] ○ Test Run            │
+│ 🔧 [5] ○ Commissioning  ❓ [6] ○ Unknown Run         │
 │                                                         │
 │ [✓ Save & Next] [→ Skip] [⚡ Bulk Mode] [📈 Stats]     │
 └─────────────────────────────────────────────────────────┘
@@ -98,7 +98,8 @@ A Streamlit-based application for validating automated run classifications from 
 | 🧪 **Sample Run** | Chemical samples, materials under investigation | Fe(III), organic compounds, foil samples |
 | ⚙️ **Calibration Run** | Detector/instrument calibration | DARK measurements, pedestal runs, energy scans |
 | 🎯 **Alignment Run** | Beam alignment and positioning | Focus adjustments, beam positioning, optical setup |
-| 🔍 **Background Run** | Reference measurements | Water, empty cell, baseline measurements |
+| 🧪 **Test Run** | Equipment testing and verification | Performance tests, detector tests, system checks |
+| 🔧 **Commissioning Run** | Initial setup and configuration | New equipment setup, commissioning activities, installation |
 | ❓ **Unknown Run** | Ambiguous or unclear activities | Insufficient information, mixed activities, vague descriptions |
 
 ### Bulk Operations
@@ -107,8 +108,10 @@ Access bulk mode for efficient validation of similar runs:
 
 #### Quick Patterns
 - **All DARK runs → calibration_run**: Automatically classify detector dark measurements
-- **All water runs → background_run**: Classify water reference measurements
+- **All water runs → background_run**: Classify water reference measurements  
 - **All foil runs → sample_run**: Classify foil sample measurements
+- **All test/verification runs → test_run**: Classify equipment testing runs
+- **All commissioning/setup runs → commissioning_run**: Classify initial setup runs
 - **Confirm high confidence**: Accept all high-confidence automated classifications
 
 #### Custom Patterns
@@ -127,8 +130,9 @@ Access bulk mode for efficient validation of similar runs:
 - `1`: Select Sample Run
 - `2`: Select Calibration Run
 - `3`: Select Alignment Run
-- `4`: Select Background Run
-- `5`: Select Unknown Run
+- `4`: Select Test Run
+- `5`: Select Commissioning Run
+- `6`: Select Unknown Run
 
 #### Modes
 - `B`: Toggle Bulk Mode

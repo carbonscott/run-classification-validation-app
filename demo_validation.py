@@ -27,9 +27,9 @@ def create_demo_validation():
         "last_updated": datetime.now().isoformat(),
         "stats": {
             "total_runs": len(runs),
-            "validated_runs": 6,
-            "corrections_made": 3,
-            "accuracy_rate": 50.0
+            "validated_runs": 8,
+            "corrections_made": 5,
+            "accuracy_rate": 37.5
         },
         "validations": {},
         "bulk_operations": []
@@ -72,6 +72,18 @@ def create_demo_validation():
             "original": "sample_run",
             "validated": "unknown_run",
             "notes": "Ambiguous - note says 'ignore this one, only half the data in it' - unclear purpose"
+        },
+        {
+            "run": 56,
+            "original": "calibration_run",
+            "validated": "test_run",
+            "notes": "Detector testing - checking jungfrau performance and settings"
+        },
+        {
+            "run": 106,
+            "original": "sample_run",
+            "validated": "commissioning_run",
+            "notes": "Equipment setup - mentions 'major operation' and exchanging wells for first time"
         }
     ]
     
@@ -101,7 +113,7 @@ def create_demo_validation():
         json.dump(validation_data, f, indent=2)
     
     print(f"💾 Created demo validation file: {output_path}")
-    print(f"📊 Contains {len(validation_data['validations'])} individual validations (including unknown_run example)")
+    print(f"📊 Contains {len(validation_data['validations'])} individual validations (including test_run, commissioning_run, unknown_run examples)")
     print(f"⚡ Contains {len(validation_data['bulk_operations'])} bulk operations")
     
     # Show some sample runs for context
