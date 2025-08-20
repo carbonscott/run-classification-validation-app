@@ -523,6 +523,15 @@ elif st.session_state.view_mode == "list":
                     # Force dataframe reset
                     st.session_state.df_key += 1
                     st.rerun()
+            
+            # Group notes field (second row)
+            st.text_area(
+                "📝 Group Notes (optional):",
+                placeholder="Explain why these runs are grouped together (e.g., 'All runs during detector calibration', 'Same sample preparation batch')...",
+                help="Optional notes that will be applied to all selected runs",
+                key="group_notes_input",
+                height=80
+            )
     else:
         st.warning("No runs match the current filters.")
     
@@ -532,8 +541,9 @@ elif st.session_state.view_mode == "list":
         st.divider()
         st.subheader("⚠️ Confirm Group Validation")
         
-        # Get the selected classification from session state
+        # Get the selected classification and notes from session state
         target_classification = st.session_state.get('group_classification_select', 'sample_run')
+        group_notes = st.session_state.get('group_notes_input', '').strip()
         
         # Show detailed preview of what will change
         st.warning(f"**You are about to validate {len(st.session_state.selected_run_indices)} runs as '{target_classification}'**")
@@ -559,6 +569,10 @@ elif st.session_state.view_mode == "list":
             preview_df = pd.DataFrame(preview_data)
             st.dataframe(preview_df, use_container_width=True, hide_index=True)
         
+        # Show custom notes if provided
+        if group_notes:
+            st.info(f"**📝 Group Notes:** {group_notes}")
+        
         # Confirmation buttons
         col_confirm, col_cancel_conf = st.columns(2)
         
@@ -572,11 +586,14 @@ elif st.session_state.view_mode == "list":
                         run_str = str(run['number'])
                         
                         # Create or update validation entry
+                        # Use custom notes if provided, otherwise fallback to generic message
+                        notes_text = group_notes if group_notes else f"Group validation applied to {len(st.session_state.selected_run_indices)} runs"
+                        
                         validation_data["validations"][run_str] = {
                             "original": run.get('classification', 'unknown'),
                             "validated": target_classification,
                             "method": "group_validation",
-                            "notes": f"Group validation applied to {len(st.session_state.selected_run_indices)} runs"
+                            "notes": notes_text
                         }
                         changes_made += 1
                 
