@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import re
 import os
+import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any
@@ -21,6 +22,14 @@ if 'bulk_mode' not in st.session_state:
     st.session_state.bulk_mode = False
 if 'show_stats' not in st.session_state:
     st.session_state.show_stats = False
+if 'view_mode' not in st.session_state:
+    st.session_state.view_mode = "detail"  # "list" or "detail"
+if 'search_term' not in st.session_state:
+    st.session_state.search_term = ""
+if 'classification_filter' not in st.session_state:
+    st.session_state.classification_filter = "All"
+if 'validation_status_filter' not in st.session_state:
+    st.session_state.validation_status_filter = "All"
 
 def get_validation_directory() -> str:
     """Get validation directory from environment variable or default"""
@@ -67,6 +76,66 @@ def get_validation_stats(validations: Dict, total_runs: int) -> Dict:
         "corrections_made": corrections,
         "accuracy_rate": accuracy
     }
+
+def create_runs_dataframe(runs_data: List[Dict], validation_data: Dict, search_term: str = "", 
+                         classification_filter: str = "All", status_filter: str = "All") -> Any:
+    """Create a filtered dataframe for the list view"""
+    
+    # Create base dataframe
+    df_data = []
+    for i, run in enumerate(runs_data):
+        # Get validation status
+        run_str = str(run['number'])
+        validation = validation_data["validations"].get(run_str, {})
+        is_validated = bool(validation)
+        validated_classification = validation.get('validated', run.get('classification', 'unknown'))
+        
+        # Truncate activities for display
+        activities_text = " | ".join(run.get('activities', []))
+        if len(activities_text) > 100:
+            activities_text = activities_text[:100] + "..."
+        
+        df_data.append({
+            'Run #': run['number'],
+            'Sample': run.get('sample', ''),
+            'Original': run.get('classification', 'unknown'),
+            'Validated': validated_classification if is_validated else '',
+            'Status': '✅ Validated' if is_validated else '⏳ Pending',
+            'Confidence': run.get('confidence', ''),
+            'Activities': activities_text,
+            'original_index': i  # Keep track of original index for navigation
+        })
+    
+    df = pd.DataFrame(df_data)
+    
+    # Apply filters
+    if search_term:
+        search_lower = search_term.lower()
+        mask = (
+            df['Sample'].str.lower().str.contains(search_lower, na=False) |
+            df['Activities'].str.lower().str.contains(search_lower, na=False) |
+            df['Original'].str.lower().str.contains(search_lower, na=False) |
+            df['Validated'].str.lower().str.contains(search_lower, na=False)
+        )
+        df = df[mask]
+    
+    if classification_filter != "All":
+        df = df[df['Original'] == classification_filter]
+    
+    if status_filter == "Validated":
+        df = df[df['Status'].str.contains('✅')]
+    elif status_filter == "Pending":
+        df = df[df['Status'].str.contains('⏳')]
+    
+    return df
+
+def get_unique_classifications(runs_data: List[Dict]) -> List[str]:
+    """Get unique classification types from the data"""
+    classifications = set()
+    for run in runs_data:
+        if run.get('classification'):
+            classifications.add(run['classification'])
+    return sorted(list(classifications))
 
 # Title and header
 st.title("🎯 Run Classification Validator")
@@ -140,12 +209,26 @@ with st.sidebar:
     
     # Mode toggles
     st.divider()
+    
+    # View mode toggle (only show if not in other modes)
+    if not st.session_state.bulk_mode and not st.session_state.show_stats:
+        current_view = "📋 List View" if st.session_state.view_mode == "detail" else "🔍 Detail View"
+        if st.button(current_view, help="Switch between list and detail views"):
+            st.session_state.view_mode = "list" if st.session_state.view_mode == "detail" else "detail"
+            st.rerun()
+    
     if st.button("⚡ Toggle Bulk Mode", help="Switch to bulk validation mode"):
         st.session_state.bulk_mode = not st.session_state.bulk_mode
+        # Return to detail view when switching modes
+        if st.session_state.bulk_mode:
+            st.session_state.view_mode = "detail"
         st.rerun()
     
     if st.button("📈 Show Statistics", help="View detailed statistics"):
         st.session_state.show_stats = not st.session_state.show_stats
+        # Return to detail view when switching modes
+        if st.session_state.show_stats:
+            st.session_state.view_mode = "detail"
         st.rerun()
     
     # Export button
@@ -281,11 +364,118 @@ elif st.session_state.bulk_mode:
             st.success(f"Applied custom pattern to {len(matching_runs)} runs!")
             st.rerun()
 
+elif st.session_state.view_mode == "list":
+    # List view mode
+    st.header("📋 Run List View")
+    
+    # Filter controls
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        search_term = st.text_input(
+            "🔍 Search runs:",
+            value=st.session_state.search_term,
+            placeholder="Search activities, samples, classifications...",
+            help="Search across run activities, sample names, and classifications"
+        )
+        if search_term != st.session_state.search_term:
+            st.session_state.search_term = search_term
+            st.rerun()
+    
+    with col2:
+        # Get unique classifications for filter
+        unique_classifications = get_unique_classifications(runs_data)
+        classification_options = ["All"] + unique_classifications
+        
+        classification_filter = st.selectbox(
+            "Classification:",
+            classification_options,
+            index=classification_options.index(st.session_state.classification_filter) if st.session_state.classification_filter in classification_options else 0
+        )
+        if classification_filter != st.session_state.classification_filter:
+            st.session_state.classification_filter = classification_filter
+            st.rerun()
+    
+    with col3:
+        status_filter = st.selectbox(
+            "Status:",
+            ["All", "Validated", "Pending"],
+            index=["All", "Validated", "Pending"].index(st.session_state.validation_status_filter)
+        )
+        if status_filter != st.session_state.validation_status_filter:
+            st.session_state.validation_status_filter = status_filter
+            st.rerun()
+    
+    # Create filtered dataframe
+    df = create_runs_dataframe(
+        runs_data, 
+        validation_data, 
+        st.session_state.search_term,
+        st.session_state.classification_filter,
+        st.session_state.validation_status_filter
+    )
+    
+    # Show summary with active filters
+    total_filtered = len(df)
+    total_runs = len(runs_data)
+    
+    # Build filter summary
+    active_filters = []
+    if st.session_state.search_term:
+        active_filters.append(f"🔍 '{st.session_state.search_term}'")
+    if st.session_state.classification_filter != "All":
+        active_filters.append(f"📂 {st.session_state.classification_filter}")
+    if st.session_state.validation_status_filter != "All":
+        active_filters.append(f"📋 {st.session_state.validation_status_filter}")
+    
+    if active_filters:
+        col_info, col_clear = st.columns([4, 1])
+        with col_info:
+            filter_text = " | ".join(active_filters)
+            st.info(f"Showing {total_filtered} of {total_runs} runs | Filters: {filter_text}")
+        with col_clear:
+            if st.button("🗑️ Clear Filters", help="Reset all filters"):
+                st.session_state.search_term = ""
+                st.session_state.classification_filter = "All"
+                st.session_state.validation_status_filter = "All"
+                st.rerun()
+    else:
+        st.info(f"Showing {total_filtered} of {total_runs} runs (no filters applied)")
+    
+    # Display the table
+    if total_filtered > 0:
+        # Configure dataframe display
+        event = st.dataframe(
+            df.drop('original_index', axis=1),  # Hide the index column
+            use_container_width=True,
+            hide_index=True,
+            on_select="rerun",
+            selection_mode="single-row"
+        )
+        
+        # Handle row selection
+        if event.selection and event.selection.rows:
+            selected_row_index = event.selection.rows[0]
+            selected_run_data = df.iloc[selected_row_index]
+            original_index = selected_run_data['original_index']
+            
+            # Navigate to detail view for selected run
+            st.session_state.current_run = original_index
+            st.session_state.view_mode = "detail"
+            st.rerun()
+    else:
+        st.warning("No runs match the current filters.")
+
 else:
     # Individual run validation mode
     if not runs_data:
         st.error("No runs found in the selected experiment file.")
         st.stop()
+    
+    # Back to list button
+    if st.button("← Back to List", help="Return to the run list view"):
+        st.session_state.view_mode = "list"
+        st.rerun()
     
     # Navigation controls
     col1, col2, col3, col4, col5 = st.columns([1, 1, 4, 1, 1])
