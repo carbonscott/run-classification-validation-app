@@ -7,7 +7,6 @@ A Streamlit-based application for validating automated run classifications from 
 ### ✨ Core Functionality
 - **Interactive validation interface** with activity-focused decision making
 - **Bulk operations** for common patterns (DARK runs, water runs, etc.)
-- **Keyboard shortcuts** for efficient navigation and validation
 - **Progress tracking** with statistics and completion metrics
 - **JSON export** for integration with analysis pipelines
 
@@ -228,25 +227,6 @@ Access bulk mode for efficient validation of similar runs:
 - **Search term**: Find runs containing specific text in activities
 - **Target classification**: Apply classification to all matching runs
 - **Preview**: See affected runs before applying
-
-### Keyboard Shortcuts
-
-#### Navigation
-- `←/→` Arrow keys: Previous/Next run
-- `Space`: Skip run
-- `Enter`: Save & Next
-
-#### Classification
-- `1`: Select Sample Run
-- `2`: Select Calibration Run
-- `3`: Select Alignment Run
-- `4`: Select Test Run
-- `5`: Select Commissioning Run
-- `6`: Select Unknown Run
-
-#### Modes
-- `B`: Toggle Bulk Mode
-- `S`: Show Statistics
 
 ### Statistics & Progress
 
