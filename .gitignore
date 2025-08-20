@@ -158,3 +158,15 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Debug and development files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.sh
+demo_validation.py
+test_data/
+
+# Screenshots and UI images (debug/development only)
+run_classifier_*.png

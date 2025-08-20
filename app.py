@@ -30,6 +30,10 @@ if 'classification_filter' not in st.session_state:
     st.session_state.classification_filter = "All"
 if 'validation_status_filter' not in st.session_state:
     st.session_state.validation_status_filter = "All"
+if 'selected_run_indices' not in st.session_state:
+    st.session_state.selected_run_indices = []
+if 'show_group_confirmation' not in st.session_state:
+    st.session_state.show_group_confirmation = False
 
 def get_validation_directory() -> str:
     """Get validation directory from environment variable or default"""
@@ -383,9 +387,9 @@ elif st.session_state.view_mode == "list":
             st.rerun()
     
     with col2:
-        # Get unique classifications for filter
-        unique_classifications = get_unique_classifications(runs_data)
-        classification_options = ["All"] + unique_classifications
+        # Get all classification types for filter
+        all_classifications = ["sample_run", "calibration_run", "alignment_run", "test_run", "commissioning_run", "unknown_run"]
+        classification_options = ["All"] + all_classifications
         
         classification_filter = st.selectbox(
             "Classification:",
@@ -414,6 +418,7 @@ elif st.session_state.view_mode == "list":
         st.session_state.classification_filter,
         st.session_state.validation_status_filter
     )
+    
     
     # Show summary with active filters
     total_filtered = len(df)
@@ -445,26 +450,159 @@ elif st.session_state.view_mode == "list":
     # Display the table
     if total_filtered > 0:
         # Configure dataframe display
+        if 'df_key' not in st.session_state:
+            st.session_state.df_key = 0
+            
         event = st.dataframe(
-            df.drop('original_index', axis=1),  # Hide the index column
+            df.drop('original_index', axis=1),  # Hide internal column
             use_container_width=True,
             hide_index=True,
             on_select="rerun",
-            selection_mode="single-row"
+            selection_mode="multi-row",
+            key=f"runs_dataframe_{st.session_state.df_key}"
         )
         
-        # Handle row selection
+        # Handle row selection and update session state
         if event.selection and event.selection.rows:
-            selected_row_index = event.selection.rows[0]
-            selected_run_data = df.iloc[selected_row_index]
-            original_index = selected_run_data['original_index']
+            selected_rows = event.selection.rows
+            st.session_state.selected_run_indices = [df.iloc[i]['original_index'] for i in selected_rows]
+        else:
+            st.session_state.selected_run_indices = []
+        
+        # Contextual panels based on selection count
+        num_selected = len(st.session_state.selected_run_indices)
+        
+        if num_selected == 1:
+            # Single selection - Show "View Details" panel
+            selected_idx = st.session_state.selected_run_indices[0]
+            selected_run = runs_data[selected_idx]
+            run_number = selected_run['number']
             
-            # Navigate to detail view for selected run
-            st.session_state.current_run = original_index
-            st.session_state.view_mode = "detail"
-            st.rerun()
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.info(f"👁️ **View Run {run_number}**")
+            with col2:
+                if st.button("View Details", type="primary", help=f"Go to detail view for Run {run_number}"):
+                    st.session_state.current_run = selected_idx
+                    st.session_state.view_mode = "detail"
+                    st.rerun()
+        
+        elif num_selected > 1:
+            # Multiple selection - Show group validation panel
+            st.info(f"🔄 **Group Validate {num_selected} runs**")
+            
+            # Simple one-row layout
+            col1, col2, col3 = st.columns([2, 1, 1])
+            
+            with col1:
+                classification_options = ["sample_run", "calibration_run", "alignment_run", "test_run", "commissioning_run", "unknown_run"]
+                classification_labels = [
+                    "🧪 Sample Run",
+                    "⚙️ Calibration Run",  
+                    "🎯 Alignment Run",
+                    "🧪 Test Run",
+                    "🔧 Commissioning Run",
+                    "❓ Unknown Run"
+                ]
+                
+                group_classification = st.selectbox(
+                    "Classification:",
+                    classification_options,
+                    format_func=lambda x: classification_labels[classification_options.index(x)],
+                    key="group_classification_select"
+                )
+            
+            with col2:
+                if st.button("✅ Validate All", type="primary", help=f"Validate all {num_selected} selected runs"):
+                    st.session_state.show_group_confirmation = True
+                    st.rerun()
+            
+            with col3:
+                if st.button("❌ Cancel", help="Clear selection"):
+                    st.session_state.selected_run_indices = []
+                    # Force dataframe reset
+                    st.session_state.df_key += 1
+                    st.rerun()
     else:
         st.warning("No runs match the current filters.")
+    
+    
+    # Group validation confirmation dialog
+    if st.session_state.show_group_confirmation:
+        st.divider()
+        st.subheader("⚠️ Confirm Group Validation")
+        
+        # Get the selected classification from session state
+        target_classification = st.session_state.get('group_classification_select', 'sample_run')
+        
+        # Show detailed preview of what will change
+        st.warning(f"**You are about to validate {len(st.session_state.selected_run_indices)} runs as '{target_classification}'**")
+        
+        # Show preview table
+        preview_data = []
+        for idx in st.session_state.selected_run_indices:
+            if idx < len(runs_data):
+                run = runs_data[idx]
+                run_str = str(run['number'])
+                existing_validation = validation_data["validations"].get(run_str, {})
+                current_classification = existing_validation.get('validated', run.get('classification', 'unknown'))
+                
+                preview_data.append({
+                    'Run #': run['number'],
+                    'Sample': run.get('sample', 'N/A'),
+                    'Current': current_classification,
+                    'New': target_classification,
+                    'Change': '✓' if current_classification != target_classification else '→'
+                })
+        
+        if preview_data:
+            preview_df = pd.DataFrame(preview_data)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+        
+        # Confirmation buttons
+        col_confirm, col_cancel_conf = st.columns(2)
+        
+        with col_confirm:
+            if st.button("🚀 Confirm & Apply", type="primary", help="Apply group validation to all selected runs"):
+                # Apply group validation
+                changes_made = 0
+                for idx in st.session_state.selected_run_indices:
+                    if idx < len(runs_data):
+                        run = runs_data[idx]
+                        run_str = str(run['number'])
+                        
+                        # Create or update validation entry
+                        validation_data["validations"][run_str] = {
+                            "original": run.get('classification', 'unknown'),
+                            "validated": target_classification,
+                            "method": "group_validation",
+                            "notes": f"Group validation applied to {len(st.session_state.selected_run_indices)} runs"
+                        }
+                        changes_made += 1
+                
+                # Record the group operation
+                validation_data["bulk_operations"].append({
+                    "pattern": f"Group validation: {len(st.session_state.selected_run_indices)} runs → {target_classification}",
+                    "applied_to": [runs_data[idx]['number'] for idx in st.session_state.selected_run_indices if idx < len(runs_data)],
+                    "timestamp": datetime.now().isoformat(),
+                    "method": "group_validation"
+                })
+                
+                # Save the validation file
+                save_validation_file(validation_file, validation_data)
+                
+                # Reset state and show success
+                st.session_state.selected_run_indices = []
+                st.session_state.show_group_confirmation = False
+                st.session_state.df_key += 1  # Reset dataframe
+                
+                st.success(f"✅ Successfully validated {changes_made} runs as '{target_classification}'!")
+                st.rerun()
+        
+        with col_cancel_conf:
+            if st.button("❌ Cancel", help="Cancel group validation and return to selection"):
+                st.session_state.show_group_confirmation = False
+                st.rerun()
 
 else:
     # Individual run validation mode
@@ -625,22 +763,29 @@ else:
 st.divider()
 with st.expander("🖱️ Navigation Guide", expanded=False):
     st.markdown("""
-    **Mouse/Click Navigation:**
-    - Use the Previous/Next buttons to navigate runs
+    **List View Navigation:**
+    - Click rows to select them (Ctrl/Cmd+click for multi-select on some systems)
+    - Use selection buttons: ☑️ Select All, 🔲 Clear Selection, 🔍 Select Pending
+    - When 1 run selected: Use 👁️ View Details button to see full details
+    - When 2+ runs selected: Group validation panel appears automatically
+    
+    **Detail View Navigation:**
+    - Use ← Previous/Next → buttons to navigate runs
     - Use the numbered radio buttons [1-6] for quick classification selection
     - Use Skip button to move without saving
     - Use Save & Next button to save and proceed
-    
-    **Quick Selection:**
-    - Click the [1-6] numbered options for fast classification
     - Use Jump to field to go directly to a specific run
-    - Use bulk mode (⚡ Toggle Bulk Mode) for pattern-based validation
+    
+    **Group Validation:**
+    - Select multiple runs → Choose classification → ✅ Apply to All
+    - Preview dialog shows what will change before confirming
+    - Perfect for validating similar runs together (e.g., all DARK runs)
     
     **Modes:**
+    - 📋 List View: Browse and select runs with filtering
+    - 🔍 Detail View: Individual run validation with full context
     - ⚡ Bulk Mode: Apply patterns to multiple runs at once
     - 📈 Statistics: View validation progress and accuracy
-    
-    *Note: Keyboard shortcuts are not supported due to browser limitations in Streamlit.*
     """)
 
 # Auto-save current state
