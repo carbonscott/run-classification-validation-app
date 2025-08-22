@@ -155,7 +155,7 @@ with st.sidebar:
         help="Directory containing the markdown experiment files"
     )
     
-    reviewer_name = st.text_input("Your name:", value="Reviewer")
+    reviewer_name = st.text_input("Your name:", value=os.getenv('REVIEWER_NAME', 'Reviewer'))
     
     # Validation data directory configuration
     default_validation_dir = get_validation_directory()

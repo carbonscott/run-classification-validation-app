@@ -139,6 +139,11 @@ def set_environment_variables(args):
         env_vars["VALIDATION_DATA_DIR"] = args.validation_dir
         print(f"📁 Using validation directory: {args.validation_dir}")
     
+    # Set reviewer name if specified
+    if args.reviewer:
+        env_vars["REVIEWER_NAME"] = args.reviewer
+        print(f"👤 Using reviewer name: {args.reviewer}")
+    
     # Add to current environment
     for key, value in env_vars.items():
         os.environ[key] = value
