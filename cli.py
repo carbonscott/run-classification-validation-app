@@ -134,6 +134,11 @@ def set_environment_variables(args):
     """Set environment variables based on command line arguments."""
     env_vars = {}
     
+    # Set data path if specified
+    if args.data_path:
+        env_vars["DATA_PATH"] = args.data_path
+        print(f"📂 Using data path: {args.data_path}")
+    
     # Set validation directory if specified
     if args.validation_dir:
         env_vars["VALIDATION_DATA_DIR"] = args.validation_dir

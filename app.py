@@ -42,9 +42,19 @@ def get_validation_directory() -> str:
 def load_validation_file(validation_path: Path) -> Dict:
     """Load existing validation JSON or create new one"""
     if validation_path.exists():
-        with open(validation_path, 'r') as f:
-            return json.load(f)
-    return {
+        try:
+            with open(validation_path, 'r') as f:
+                data = json.load(f)
+                # Add status for debugging
+                data["_file_status"] = "existing"
+                data["_file_path"] = str(validation_path)
+                return data
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            st.warning(f"⚠️ Could not load validation file {validation_path}: {e}")
+            # Fall through to create new file
+    
+    # Create new validation file
+    new_data = {
         "experiment_id": "",
         "source_file": "",
         "reviewer": "",
@@ -57,15 +67,25 @@ def load_validation_file(validation_path: Path) -> Dict:
             "accuracy_rate": 0.0
         },
         "validations": {},
-        "bulk_operations": []
+        "bulk_operations": [],
+        "_file_status": "new",
+        "_file_path": str(validation_path)
     }
+    return new_data
 
 def save_validation_file(validation_path: Path, data: Dict):
     """Save validation data to JSON file"""
     data["last_updated"] = datetime.now().isoformat()
+    
+    # Remove debugging fields before saving
+    save_data = {k: v for k, v in data.items() if not k.startswith('_')}
+    
     validation_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(validation_path, 'w') as f:
-        json.dump(data, f, indent=2)
+    try:
+        with open(validation_path, 'w') as f:
+            json.dump(save_data, f, indent=2)
+    except Exception as e:
+        st.error(f"❌ Failed to save validation file {validation_path}: {e}")
 
 def get_validation_stats(validations: Dict, total_runs: int) -> Dict:
     """Calculate validation statistics"""
@@ -151,7 +171,7 @@ with st.sidebar:
     
     data_path = st.text_input(
         "Path to experiment files:",
-        value="/sdf/data/lcls/ds/prj/prjcwang31/results/proj-peaknet-1m/fully_enriched_experiments",
+        value=os.getenv('DATA_PATH', "/sdf/data/lcls/ds/prj/prjcwang31/results/proj-peaknet-1m/fully_enriched_experiments"),
         help="Directory containing the markdown experiment files"
     )
     
@@ -164,6 +184,15 @@ with st.sidebar:
         value=default_validation_dir,
         help=f"Directory to store validation progress files. Default from VALIDATION_DATA_DIR env var or 'validations'"
     )
+    
+    # Verify validation directory
+    validation_dir_path = Path(validation_data_dir)
+    try:
+        validation_dir_path.mkdir(exist_ok=True, parents=True)
+        # Count existing validation files
+        validation_files = list(validation_dir_path.glob("*_validation.json"))
+    except Exception as e:
+        st.error(f"❌ Cannot access validation directory {validation_data_dir}: {e}")
     
     # File selection
     if Path(data_path).exists():
